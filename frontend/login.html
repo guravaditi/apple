@@ -161,40 +161,45 @@
         const loginBtn = document.getElementById('loginBtn');
         const errorMsg = document.getElementById('errorMsg');
 
-        console.log("Login attempt starting...");
-        try {
-            if (!window.supabase) throw new Error("Supabase library not loaded!");
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMsg.style.display = 'none';
+            loginBtn.innerHTML = '<span class="cta-text">Signing in...</span>';
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            console.log("Login attempt starting...");
+            try {
+                if (!window.supabase) throw new Error("Supabase library not loaded!");
 
-            console.log("Calling supabase.auth.signInWithPassword", { email });
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
+                console.log("Calling supabase.auth.signInWithPassword", { email });
 
-            console.log("Supabase response:", { data, error });
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
 
-            if (error) throw error;
+                console.log("Supabase response:", { data, error });
 
-            if (!data?.session) {
-                throw new Error("Login successful but no session returned!");
+                if (error) throw error;
+
+                if (!data?.session) {
+                    throw new Error("Login successful but no session returned!");
+                }
+
+                console.log("Saving token and redirecting...");
+                localStorage.setItem('sb-access-token', data.session.access_token);
+                alert("Login Successful! Redirecting...");
+                window.location.href = 'index.html';
+
+            } catch (err) {
+                console.error("Login Error:", err);
+                errorMsg.textContent = err.message;
+                errorMsg.style.display = 'block';
+                loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
+                alert("Login Error: " + err.message);
             }
-
-            console.log("Saving token and redirecting...");
-            localStorage.setItem('sb-access-token', data.session.access_token);
-            alert("Login Successful! Redirecting...");
-            window.location.href = 'index.html';
-
-        } catch (err) {
-            console.error("Login Error:", err);
-            errorMsg.textContent = err.message;
-            errorMsg.style.display = 'block';
-            loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
-            alert("Login Error: " + err.message);
-        }
         });
 
         // Simple Signup Toggle (Mock)
