@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EduBot AI - Your personal AI-powered learning universe with advanced tutoring, flashcards, games, and smart summaries">
+    <title>EduBot AI - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <div class="logo-icon">🤖</div>
+                <span class="logo-text">EduBot AI</span>
+            </div>
+            
+            <div class="nav-links">
+                <a href="#" class="nav-link active">Home</a>
+                <a href="#" class="nav-link">Profile</a>
+                <a href="#" class="nav-link">Feedback</a>
+                <a href="#" class="nav-link">Settings</a>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <div class="user-avatar" id="userAvatar">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="User Avatar">
+                    <div class="avatar-dropdown" id="avatarDropdown">
+                        <div class="dropdown-item">
+                            <span>👤</span> My Profile
+                        </div>
+                        <div class="dropdown-item">
+                            <span>⚙️</span> Settings
+                        </div>
+                        <div class="dropdown-item">
+                            <span>📊</span> Analytics
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item">
+                            <span>🚪</span> Logout
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome back, <span id="userName">Alex Chen</span></h1>
+            <p class="hero-subtitle">Your personal AI-powered learning universe</p>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Content -->
+    <main class="dashboard-container">
+        <!-- Feature Grid -->
+        <section class="features-section">
+            <h2 class="section-title">Explore Features</h2>
+            <div class="features-grid">
+                <div class="feature-card" data-feature="ai-tutor">
+                    <div class="feature-icon">
+                        <img src="assets/ai-tutor.png" alt="AI Tutor">
+                    </div>
+                    <h3 class="feature-title">AI Tutor</h3>
+                    <p class="feature-description">Get personalized help from your intelligent AI companion</p>
+                    <div class="feature-glow"></div>
+                </div>
+
+                <div class="feature-card" data-feature="flashcards">
+                    <div class="feature-icon">
+                        <img src="assets/flashcards.png" alt="Flashcards">
+                    </div>
+                    <h3 class="feature-title">Flashcards</h3>
+                    <p class="feature-description">Master concepts with smart, adaptive flashcard decks</p>
+                    <div class="feature-glow"></div>
+                </div>
+
+                <div class="feature-card" data-feature="games">
+                    <div class="feature-icon">
+                        <img src="assets/games.png" alt="Learning Games">
+                    </div>
+                    <h3 class="feature-title">Learning Games</h3>
+                    <p class="feature-description">Make learning fun with interactive educational games</p>
+                    <div class="feature-glow"></div>
+                </div>
+
+                <div class="feature-card" data-feature="summary">
+                    <div class="feature-icon">
+                        <img src="assets/summary.png" alt="Smart Summary">
+                    </div>
+                    <h3 class="feature-title">Smart Summary</h3>
+                    <p class="feature-description">AI-powered summaries of complex topics in seconds</p>
+                    <div class="feature-glow"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Widgets -->
+        <section class="widgets-section">
+            <div class="widgets-grid">
+                <!-- Progress Widget -->
+                <div class="widget progress-widget">
+                    <h3 class="widget-title">Learning Progress</h3>
+                    <div class="progress-ring-container">
+                        <svg class="progress-ring" width="160" height="160">
+                            <circle class="progress-ring-bg" cx="80" cy="80" r="70"></circle>
+                            <circle class="progress-ring-fill" cx="80" cy="80" r="70" id="progressCircle"></circle>
+                        </svg>
+                        <div class="progress-percentage" id="progressPercentage">68%</div>
+                    </div>
+                    <p class="progress-label">Overall Completion</p>
+                </div>
+
+                <!-- Activity Timeline -->
+                <div class="widget activity-widget">
+                    <h3 class="widget-title">Recent Activity</h3>
+                    <div class="activity-timeline" id="activityTimeline">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Streak Counter -->
+                <div class="widget streak-widget">
+                    <h3 class="widget-title">Learning Streak</h3>
+                    <div class="streak-display">
+                        <div class="streak-icon">🔥</div>
+                        <div class="streak-number" id="streakNumber">12</div>
+                        <div class="streak-label">Days</div>
+                    </div>
+                    <p class="streak-message">Keep it up! You're on fire!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <button class="cta-button" id="ctaButton">
+                <span class="cta-text">Start Learning</span>
+                <span class="cta-icon">→</span>
+            </button>
+        </section>
+    </main>
+
+    <!-- Floating Quick Access Buttons -->
+    <div class="floating-buttons">
+        <button class="fab" data-tooltip="AI Tutor" data-feature="ai-tutor">
+            <span>🧠</span>
+        </button>
+        <button class="fab" data-tooltip="Flashcards" data-feature="flashcards">
+            <span>📚</span>
+        </button>
+        <button class="fab" data-tooltip="Games" data-feature="games">
+            <span>🎮</span>
+        </button>
+        <button class="fab" data-tooltip="Avatar Tutor" data-feature="avatar">
+            <span>👨‍🏫</span>
+        </button>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="bottom-nav-item active">
+            <span class="bottom-nav-icon">🏠</span>
+            <span class="bottom-nav-label">Home</span>
+        </button>
+        <button class="bottom-nav-item">
+            <span class="bottom-nav-icon">👤</span>
+            <span class="bottom-nav-label">Profile</span>
+        </button>
+        <button class="bottom-nav-item">
+            <span class="bottom-nav-icon">💬</span>
+            <span class="bottom-nav-label">Feedback</span>
+        </button>
+        <button class="bottom-nav-item">
+            <span class="bottom-nav-icon">⚙️</span>
+            <span class="bottom-nav-label">Settings</span>
+        </button>
+    </nav>
+
+    <script src="script.js"></script>
+</body>
+</html>
