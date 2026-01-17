@@ -161,34 +161,40 @@
         const loginBtn = document.getElementById('loginBtn');
         const errorMsg = document.getElementById('errorMsg');
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorMsg.style.display = 'none';
-            loginBtn.innerHTML = '<span class="cta-text">Signing in...</span>';
+        console.log("Login attempt starting...");
+        try {
+            if (!window.supabase) throw new Error("Supabase library not loaded!");
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: document.getElementById('email').value,
-                    password: document.getElementById('password').value
-                });
+            console.log("Calling supabase.auth.signInWithPassword", { email });
 
-                if (error) throw error;
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-                // Save token for manual API calls if needed (Supabase client handles its own session too)
-                localStorage.setItem('sb-access-token', data.session.access_token);
+            console.log("Supabase response:", { data, error });
 
-                // Create profile if not exists (handled by trigger usually, or we can upsert here)
-                // For now, redirect.
-                window.location.href = 'index.html';
+            if (error) throw error;
 
-            } catch (err) {
-                errorMsg.textContent = err.message;
-                errorMsg.style.display = 'block';
-                loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
+            if (!data?.session) {
+                throw new Error("Login successful but no session returned!");
             }
+
+            console.log("Saving token and redirecting...");
+            localStorage.setItem('sb-access-token', data.session.access_token);
+            alert("Login Successful! Redirecting...");
+            window.location.href = 'index.html';
+
+        } catch (err) {
+            console.error("Login Error:", err);
+            errorMsg.textContent = err.message;
+            errorMsg.style.display = 'block';
+            loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
+            alert("Login Error: " + err.message);
+        }
         });
 
         // Simple Signup Toggle (Mock)
