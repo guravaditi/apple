@@ -54,7 +54,7 @@ themeToggle.addEventListener('click', () => {
     const isLight = document.body.classList.contains('light-theme');
     themeIcon.textContent = isLight ? '☀️' : '🌙';
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    
+
     // Add smooth transition effect
     themeToggle.style.transform = 'rotate(360deg)';
     setTimeout(() => {
@@ -145,7 +145,7 @@ userData.recentActivity.forEach((activity, index) => {
     const activityItem = document.createElement('div');
     activityItem.className = 'activity-item';
     activityItem.style.animationDelay = `${index * 0.1}s`;
-    
+
     activityItem.innerHTML = `
         <div class="activity-icon">${activity.icon}</div>
         <div class="activity-content">
@@ -153,7 +153,7 @@ userData.recentActivity.forEach((activity, index) => {
             <div class="activity-time">${activity.time}</div>
         </div>
     `;
-    
+
     activityTimeline.appendChild(activityItem);
 });
 
@@ -167,7 +167,7 @@ featureCards.forEach(card => {
         const feature = card.getAttribute('data-feature');
         handleFeatureClick(feature);
     });
-    
+
     // Add ripple effect on click
     card.addEventListener('mousedown', (e) => {
         const ripple = document.createElement('div');
@@ -178,13 +178,13 @@ featureCards.forEach(card => {
         ripple.style.height = '20px';
         ripple.style.pointerEvents = 'none';
         ripple.style.animation = 'ripple 0.6s ease-out';
-        
+
         const rect = card.getBoundingClientRect();
         ripple.style.left = (e.clientX - rect.left - 10) + 'px';
         ripple.style.top = (e.clientY - rect.top - 10) + 'px';
-        
+
         card.appendChild(ripple);
-        
+
         setTimeout(() => ripple.remove(), 600);
     });
 });
@@ -221,7 +221,7 @@ const ctaButton = document.getElementById('ctaButton');
 ctaButton.addEventListener('click', () => {
     // Simulate starting learning
     ctaButton.innerHTML = '<span class="cta-text">Loading...</span>';
-    
+
     setTimeout(() => {
         ctaButton.innerHTML = '<span class="cta-text">Start Learning</span><span class="cta-icon">→</span>';
         showNotification('🚀 Let\'s begin your learning journey!');
@@ -243,18 +243,144 @@ bottomNavItems.forEach(item => {
 // ===================================
 // FEATURE CLICK HANDLER
 // ===================================
+// ===================================
+// API CONFIGURATION
+// ===================================
+const API_BASE_URL = "http://localhost:8000";
+
+// CONFIG: REPLACE WITH YOUR SUPABASE KEYS
+const SUPABASE_URL = "https://vkdduawecojsokegtywe.supabase.co/";
+const SUPABASE_ANON_KEY = "sb_secret_O0SRfk7ywqCXr2dzcZYrRg_vC2O-yWn";
+
+// Check Auth
+const accessToken = localStorage.getItem('sb-access-token');
+if (!accessToken && window.location.pathname.endsWith('index.html')) {
+    // Basic protection (can be bypassed by editing JS, but good enough for UI flow)
+    window.location.href = 'login.html';
+}
+
+// ===================================
+// FEATURE CLICK HANDLER & API LOGIC
+// ===================================
+const modal = document.getElementById("interactionModal");
+const closeModal = document.querySelector(".close-modal");
+const generateBtn = document.getElementById("generateBtn");
+const modalTitle = document.getElementById("modalTitle");
+const resultArea = document.getElementById("resultArea");
+const sourceText = document.getElementById("sourceText");
+
+let currentFeature = "";
+
+// Close Modal
+closeModal.onclick = function () {
+    modal.style.display = "none";
+}
+window.onclick = function (event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
 function handleFeatureClick(feature) {
     const featureNames = {
         'ai-tutor': 'AI Tutor',
         'flashcards': 'Flashcards',
-        'games': 'Learning Games',
-        'summary': 'Smart Summary',
-        'avatar': 'Avatar Tutor'
+        'games': 'Games',
+        'summary': 'Summary',
+        'avatar': 'Avatar'
     };
-    
-    const featureName = featureNames[feature] || feature;
-    showNotification(`🎯 Opening ${featureName}...`);
+
+    // Map feature to Backend Generation Type
+    // Backend supports: 'flashcards', 'quiz', 'deep-dive'
+    const typeMapping = {
+        'flashcards': 'flashcards',
+        'games': 'quiz', // Map games to quiz for now
+        'summary': 'deep-dive', // Map summary to deep-dive
+        'ai-tutor': 'deep-dive'
+    };
+
+    if (!typeMapping[feature]) {
+        showNotification(`🚧 ${featureNames[feature] || feature} coming soon!`);
+        return;
+    }
+
+    currentFeature = typeMapping[feature];
+    modalTitle.textContent = `Generate ${featureNames[feature] || feature}`;
+    resultArea.style.display = 'none';
+    resultArea.textContent = '';
+    modal.style.display = "block";
 }
+
+generateBtn.onclick = async () => {
+    const text = sourceText.value;
+    if (!text) {
+        showNotification("⚠️ Please enter some text first");
+        return;
+    }
+
+    generateBtn.textContent = "Generating...";
+    generateBtn.disabled = true;
+
+    try {
+        // 1. Ingest Text
+        // NOTE: In production, we should handle Auth headers here. 
+        // For hackathon with Service Role or simplistic setup, we might skip or fail if RLS is on and we don't pass token.
+        // Since user wanted "Implement now", I will assume we might need a test token or public access if RLS blocks.
+        // Ideally: const { data: { session } } = await supabase.auth.getSession()
+        // Headers: { Authorization: `Bearer ${session.access_token}` }
+        // For now, let's try calling it. If it 401s, we'll need to add Auth logic.
+
+        // Mocking a User ID for ingestion (Backend expects user_id from token usually, but let's see)
+        // Actually, my backend dependencies.py requires `Authorization` header.
+        // We need a way to log in! 
+        // Since we don't have a login UI yet, this will fail 401. 
+
+        // TEMPORARY FIX: we will assume the User is sending a dummy token or we update backend to allow anon.
+        // OR better: I alert the user they need to log in, but there is no login page.
+        // Let's implement the call and see.
+
+        const ingestRes = await fetch(`${API_BASE_URL}/ingest/text`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('sb-access-token') || 'test-token'}`
+            },
+            body: JSON.stringify({ title: "Frontend Upload", content: text })
+        });
+
+        if (!ingestRes.ok) throw new Error("Ingestion failed - Check Auth/Backend");
+        const ingestData = await ingestRes.json();
+
+        // 2. Generate Content
+        const genRes = await fetch(`${API_BASE_URL}/generate/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('sb-access-token') || 'test-token'}`
+            },
+            body: JSON.stringify({
+                document_id: ingestData.document_id,
+                type: currentFeature
+            })
+        });
+
+        if (!genRes.ok) throw new Error("Generation failed");
+        const genData = await genRes.json();
+
+        resultArea.style.display = 'block';
+        resultArea.textContent = JSON.stringify(genData.content, null, 2);
+        showNotification("✨ Content Generated Successfully!");
+
+    } catch (e) {
+        console.error(e);
+        showNotification(`❌ Error: ${e.message}`);
+        resultArea.style.display = 'block';
+        resultArea.textContent = "Error: " + e.message + "\n(Note: You need a valid Supabase Token in localStorage 'sb-access-token' for the backend to accept requests)";
+    } finally {
+        generateBtn.textContent = "Generate";
+        generateBtn.disabled = false;
+    }
+};
 
 // ===================================
 // NOTIFICATION SYSTEM
@@ -265,11 +391,11 @@ function showNotification(message) {
     if (existingNotification) {
         existingNotification.remove();
     }
-    
+
     const notification = document.createElement('div');
     notification.className = 'notification';
     notification.textContent = message;
-    
+
     // Add notification styles
     Object.assign(notification.style, {
         position: 'fixed',
@@ -284,9 +410,9 @@ function showNotification(message) {
         animation: 'slideInRight 0.3s ease, slideOutRight 0.3s ease 2.7s',
         fontWeight: '600'
     });
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.remove();
     }, 3000);

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduBot AI - Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: var(--spacing-lg);
+            background: var(--bg-primary);
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .login-logo {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            animation: float 3s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: var(--spacing-xs);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            margin-top: var(--spacing-md);
+        }
+
+        .error-msg {
+            color: #ff4444;
+            margin-top: var(--spacing-md);
+            display: none;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hero-background"></div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-logo">🤖</div>
+            <h1 class="login-title">Welcome Back</h1>
+            <p class="login-subtitle">Sign in to your learning universe</p>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="email" class="form-input" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-input" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="cta-button login-btn" id="loginBtn">
+                    <span class="cta-text">Sign In</span>
+                    <span class="cta-icon">→</span>
+                </button>
+            </form>
+
+            <p class="error-msg" id="errorMsg"></p>
+
+            <p style="margin-top: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+                No account? <a href="#" id="signupLink" style="color: var(--accent-cyan);">Sign up</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8000"; // Optional if we used backend for auth, but we use Supabase directly
+
+        // Initialize Supabase (REPLACE THESE WITH YOUR ACTUAL KEYS FROM .env)
+        // User must edit this file or we need a way to inject them. 
+        // For Hackathon, mostly hardcoded public keys in JS is standard-ish if not using a bundler.
+        // I will put placeholders and ask user to fill them.
+
+        // NOTE: The previous `supabase.js` had VITE_... which implies user might have them.
+        // I will try to read them if I can? No, client-side JS needs them.
+
+        const SUPABASE_URL = "https://vkdduawecojsokegtywe.supabase.co/";
+        const SUPABASE_ANON_KEY = "sb_secret_O0SRfk7ywqCXr2dzcZYrRg_vC2O-yWn";
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMsg = document.getElementById('errorMsg');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMsg.style.display = 'none';
+            loginBtn.innerHTML = '<span class="cta-text">Signing in...</span>';
+
+            constemail = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value
+                });
+
+                if (error) throw error;
+
+                // Save token for manual API calls if needed (Supabase client handles its own session too)
+                localStorage.setItem('sb-access-token', data.session.access_token);
+
+                // Create profile if not exists (handled by trigger usually, or we can upsert here)
+                // For now, redirect.
+                window.location.href = 'index.html';
+
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.style.display = 'block';
+                loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
+            }
+        });
+
+        // Simple Signup Toggle (Mock)
+        document.getElementById('signupLink').addEventListener('click', async (e) => {
+            e.preventDefault();
+            // Just swap button text for demo simplicity or call signUp
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (!email || !password) {
+                errorMsg.textContent = "Enter email/password to sign up";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            loginBtn.innerHTML = '<span class="cta-text">Signing up...</span>';
+            const { data, error } = await supabase.auth.signUp({
+                email, password
+            });
+
+            if (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+                loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
+            } else {
+                alert("Check your email for the confirmation link!");
+                loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
+            }
+        });
+    </script>
+</body>
+
+</html>

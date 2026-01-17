@@ -198,6 +198,25 @@
         </button>
     </nav>
 
+    <!-- Interaction Modal -->
+    <div id="interactionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modalTitle">Generate Content</h2>
+            <div class="modal-body">
+                <textarea id="sourceText" placeholder="Paste your study notes here..." rows="6"></textarea>
+                <div class="file-upload-container">
+                    <label for="fileUpload">Or upload a file (PDF support coming soon)</label>
+                    <input type="file" id="fileUpload" disabled> <!-- Backend supports it, but simple text first -->
+                </div>
+                <button id="generateBtn" class="cta-button" style="width: 100%; margin-top: 1rem;">
+                    Generate
+                </button>
+                <div id="resultArea" style="margin-top: 1rem; white-space: pre-wrap; display: none; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 
