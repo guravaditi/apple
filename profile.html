@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EduBot AI Profile - Manage your learning preferences and view your progress">
+    <title>Profile - EduBot AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="profile.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <div class="logo-icon">🤖</div>
+                <span class="logo-text">EduBot AI</span>
+            </div>
+
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="profile.html" class="nav-link active">Profile</a>
+                <a href="#" class="nav-link">Feedback</a>
+                <a href="#" class="nav-link">Settings</a>
+            </div>
+
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <div class="user-avatar-nav" id="userAvatarNav">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="User Avatar">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Page Content -->
+    <main class="profile-container">
+        <div class="profile-card">
+            <!-- Avatar Section -->
+            <div class="profile-avatar-section">
+                <div class="profile-avatar-wrapper">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Profile Avatar"
+                        class="profile-avatar" id="profileAvatar">
+                    <div class="avatar-glow"></div>
+                </div>
+                <h1 class="profile-name" id="displayName">Alex Chen</h1>
+                <p class="profile-role-display" id="displayRole">Student</p>
+            </div>
+
+            <!-- Editable Fields Section -->
+            <div class="profile-section">
+                <h2 class="section-heading">Personal Information</h2>
+
+                <div class="form-group">
+                    <label for="userName" class="form-label">Name</label>
+                    <input type="text" id="userName" class="form-input" value="Alex Chen" placeholder="Enter your name">
+                </div>
+
+                <div class="form-group">
+                    <label for="userEmail" class="form-label">Email</label>
+                    <input type="email" id="userEmail" class="form-input readonly" value="alex.chen@edubot.ai" readonly>
+                    <span class="input-hint">Email cannot be changed</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="userRole" class="form-label">Role</label>
+                    <select id="userRole" class="form-select">
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Preferences Section -->
+            <div class="profile-section">
+                <h2 class="section-heading">Preferences</h2>
+
+                <div class="form-group">
+                    <label for="accentColor" class="form-label">Accent Color</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="accentColor" class="color-input" value="#00d4ff">
+                        <div class="color-preview" id="colorPreview"></div>
+                        <span class="color-label" id="colorLabel">#00d4ff</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Theme Preference</label>
+                    <div class="theme-selector">
+                        <button class="theme-option active" data-theme="dark" id="darkThemeBtn">
+                            <span class="theme-icon-btn">🌙</span>
+                            <span>Dark</span>
+                        </button>
+                        <button class="theme-option" data-theme="light" id="lightThemeBtn">
+                            <span class="theme-icon-btn">☀️</span>
+                            <span>Light</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Snapshot Section -->
+            <div class="profile-section">
+                <h2 class="section-heading">Progress Snapshot</h2>
+
+                <div class="progress-grid">
+                    <div class="progress-stat">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-value" id="flashcardsCount">247</div>
+                        <div class="stat-label">Flashcards Completed</div>
+                    </div>
+
+                    <div class="progress-stat">
+                        <div class="stat-icon">🎮</div>
+                        <div class="stat-value" id="gamesCount">18</div>
+                        <div class="stat-label">Games Played</div>
+                    </div>
+
+                    <div class="progress-stat">
+                        <div class="stat-icon">🔥</div>
+                        <div class="stat-value" id="streakCount">12</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+
+                    <div class="progress-stat">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-value" id="lastSession">Today</div>
+                        <div class="stat-label">Last Session</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="profile-actions">
+                <button class="save-button" id="saveButton">
+                    <span class="save-text">Save Changes</span>
+                    <span class="save-icon">✓</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message">Profile updated successfully!</span>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="profile.js"></script>
+</body>
+
+</html>
