@@ -142,91 +142,113 @@
     </div>
 
     <script>
-        const API_URL = "http://localhost:8000"; // Optional if we used backend for auth, but we use Supabase directly
+        // Global Error Handler to catch syntax or reference errors
+        window.onerror = function (msg, url, line) {
+            alert("Script Error: " + msg + "\nLine: " + line);
+            return false;
+        };
 
-        // Initialize Supabase (REPLACE THESE WITH YOUR ACTUAL KEYS FROM .env)
-        // User must edit this file or we need a way to inject them. 
-        // For Hackathon, mostly hardcoded public keys in JS is standard-ish if not using a bundler.
-        // I will put placeholders and ask user to fill them.
-
-        // NOTE: The previous `supabase.js` had VITE_... which implies user might have them.
-        // I will try to read them if I can? No, client-side JS needs them.
-
+        const API_URL = "http://localhost:8000";
         const SUPABASE_URL = "https://vkdduawecojsokegtywe.supabase.co/";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZGR1YXdlY29qc29rZWd0eXdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2NzQxMjMsImV4cCI6MjA4NDI1MDEyM30.fDnDvTBHXsyAUnqASngYG5ak0NGl3FhZ8qpi_Gon59A";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let sbClient = null;
 
-        const loginForm = document.getElementById('loginForm');
-        const loginBtn = document.getElementById('loginBtn');
-        const errorMsg = document.getElementById('errorMsg');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Loaded.");
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorMsg.style.display = 'none';
-            loginBtn.innerHTML = '<span class="cta-text">Signing in...</span>';
+            // Check if Supabase loaded
+            if (typeof window.supabase === 'undefined') {
+                alert("CRITICAL: Supabase library failed to load from CDN. Check your internet connection or ad blocker.");
+                return;
+            }
 
-            console.log("Login attempt starting...");
             try {
-                if (!window.supabase) throw new Error("Supabase library not loaded!");
+                // Initialize Client (renamed to sbClient to avoid collision)
+                sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("Supabase Client Initialized.");
+            } catch (e) {
+                alert("CRITICAL: Failed to initialize Supabase: " + e.message);
+                return;
+            }
+
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            const signupLink = document.getElementById('signupLink');
+
+            if (!loginForm || !loginBtn || !signupLink) {
+                console.error("Elements missing!");
+                alert("Error: UI Elements not found.");
+                return;
+            }
+
+            // JOIN/LOGIN LOGIC
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = 'none';
+                loginBtn.innerHTML = '<span class="cta-text">Processing...</span>';
 
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
 
-                console.log("Calling supabase.auth.signInWithPassword", { email });
+                console.log("Attempting Sign In...");
 
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
+                try {
+                    const { data, error } = await sbClient.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
 
-                console.log("Supabase response:", { data, error });
+                    if (error) throw error;
 
-                if (error) throw error;
+                    if (!data?.session) throw new Error("No session returned.");
 
-                if (!data?.session) {
-                    throw new Error("Login successful but no session returned!");
+                    console.log("Login Success.");
+                    localStorage.setItem('sb-access-token', data.session.access_token);
+                    loginBtn.innerHTML = '<span class="cta-text">Success! Redirecting...</span>';
+                    setTimeout(() => window.location.href = 'index.html', 1000);
+
+                } catch (err) {
+                    console.error("Sign In Error:", err);
+                    errorMsg.textContent = err.message;
+                    errorMsg.style.display = 'block';
+                    loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
+                    alert("Sign In Failed: " + err.message);
                 }
-
-                console.log("Saving token and redirecting...");
-                localStorage.setItem('sb-access-token', data.session.access_token);
-                alert("Login Successful! Redirecting...");
-                window.location.href = 'index.html';
-
-            } catch (err) {
-                console.error("Login Error:", err);
-                errorMsg.textContent = err.message;
-                errorMsg.style.display = 'block';
-                loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
-                alert("Login Error: " + err.message);
-            }
-        });
-
-        // Simple Signup Toggle (Mock)
-        document.getElementById('signupLink').addEventListener('click', async (e) => {
-            e.preventDefault();
-            // Just swap button text for demo simplicity or call signUp
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            if (!email || !password) {
-                errorMsg.textContent = "Enter email/password to sign up";
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            loginBtn.innerHTML = '<span class="cta-text">Signing up...</span>';
-            const { data, error } = await supabase.auth.signUp({
-                email, password
             });
 
-            if (error) {
-                errorMsg.textContent = error.message;
-                errorMsg.style.display = 'block';
-                loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
-            } else {
-                alert("Check your email for the confirmation link!");
-                loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
-            }
+            // SIGNUP LOGIC
+            signupLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                if (!email || !password) {
+                    alert("Please enter an Email and Password to Sign Up.");
+                    return;
+                }
+
+                if (!confirm("Create new account with these credentials?\n" + email)) return;
+
+                loginBtn.innerHTML = '<span class="cta-text">Creating Account...</span>';
+
+                try {
+                    const { data, error } = await sbClient.auth.signUp({
+                        email: email,
+                        password: password
+                    });
+
+                    if (error) throw error;
+
+                    alert("Signup Successful! Check your email for the confirmation link.");
+                    loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
+
+                } catch (err) {
+                    alert("Signup Failed: " + err.message);
+                    loginBtn.innerHTML = '<span class="cta-text">Sign In</span><span class="cta-icon">→</span>';
+                }
+            });
         });
     </script>
 </body>
