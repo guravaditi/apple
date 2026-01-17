@@ -56,6 +56,7 @@
             margin-bottom: var(--spacing-xs);
             background: var(--gradient-primary);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -152,7 +153,7 @@
         // I will try to read them if I can? No, client-side JS needs them.
 
         const SUPABASE_URL = "https://vkdduawecojsokegtywe.supabase.co/";
-        const SUPABASE_ANON_KEY = "sb_secret_O0SRfk7ywqCXr2dzcZYrRg_vC2O-yWn";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZGR1YXdlY29qc29rZWd0eXdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2NzQxMjMsImV4cCI6MjA4NDI1MDEyM30.fDnDvTBHXsyAUnqASngYG5ak0NGl3FhZ8qpi_Gon59A";
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
