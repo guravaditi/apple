@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -67,8 +68,34 @@
     <section class="hero">
         <div class="hero-background"></div>
         <div class="hero-content">
-            <h1 class="hero-title">Welcome back, <span id="userName">Alex Chen</span></h1>
-            <p class="hero-subtitle">Your personal AI-powered learning universe</p>
+            <h1 class="hero-title">Welcome to your personal AI-powered learning universe</h1>
+
+            <!-- Generator Section (Moved from Modal) -->
+            <div class="hero-generator" id="heroGenerator">
+                <h2 class="generator-title" id="generatorTitle">Generate Content</h2>
+                <div class="input-wrapper" style="position: relative;">
+                    <textarea id="sourceText" placeholder="Paste text or attach a file..." rows="6"></textarea>
+
+                    <div class="input-actions"
+                        style="position: absolute; bottom: 15px; right: 15px; display: flex; gap: 10px;">
+                        <input type="file" id="fileUpload" style="display: none;" accept=".pdf,.txt,.md">
+                        <button id="attachBtn" class="icon-btn" title="Upload File (PDF)">
+                            +
+                        </button>
+                    </div>
+                </div>
+                <div id="filePreview"
+                    style="margin-top: 10px; font-size: 0.9rem; color: var(--accent-cyan); display: none;">
+                    📎 <span id="fileName">file.pdf</span> <span id="removeFile"
+                        style="cursor: pointer; color: #ff4444; margin-left: 10px;">✖</span>
+                </div>
+                <button id="generateBtn" class="cta-button" style="width: 100%; margin-top: 1rem;">
+                    Generate
+                </button>
+                <div id="resultArea"
+                    style="margin-top: 1rem; white-space: pre-wrap; display: none; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; text-align: left;">
+                </div>
+            </div>
         </div>
     </section>
 
@@ -198,24 +225,7 @@
         </button>
     </nav>
 
-    <!-- Interaction Modal -->
-    <div id="interactionModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 id="modalTitle">Generate Content</h2>
-            <div class="modal-body">
-                <textarea id="sourceText" placeholder="Paste your study notes here..." rows="6"></textarea>
-                <div class="file-upload-container">
-                    <label for="fileUpload">Or upload a file (PDF support coming soon)</label>
-                    <input type="file" id="fileUpload" disabled> <!-- Backend supports it, but simple text first -->
-                </div>
-                <button id="generateBtn" class="cta-button" style="width: 100%; margin-top: 1rem;">
-                    Generate
-                </button>
-                <div id="resultArea" style="margin-top: 1rem; white-space: pre-wrap; display: none; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;"></div>
-            </div>
-        </div>
-    </div>
+    <!-- Interaction Modal Removed -->
 
     <script src="script.js"></script>
 </body>

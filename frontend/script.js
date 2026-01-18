@@ -250,53 +250,87 @@ const API_BASE_URL = "http://localhost:8000";
 
 // CONFIG: REPLACE WITH YOUR SUPABASE KEYS
 const SUPABASE_URL = "https://vkdduawecojsokegtywe.supabase.co/";
-const SUPABASE_ANON_KEY = "sb_secret_O0SRfk7ywqCXr2dzcZYrRg_vC2O-yWn";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZGR1YXdlY29qc29rZWd0eXdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2NzQxMjMsImV4cCI6MjA4NDI1MDEyM30.fDnDvTBHXsyAUnqASngYG5ak0NGl3FhZ8qpi_Gon59A";
 
-// Check Auth
-const accessToken = localStorage.getItem('sb-access-token');
-if (!accessToken && window.location.pathname.endsWith('index.html')) {
-    // Basic protection (can be bypassed by editing JS, but good enough for UI flow)
-    window.location.href = 'login.html';
+// Initialize Supabase Client
+let sbClient = null;
+try {
+    if (window.supabase) {
+        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } else {
+        console.error("Supabase CDN not loaded in index.html");
+    }
+} catch (e) {
+    console.error("Supabase Init Error:", e);
 }
+
+// Check Auth & Load User
+async function checkAuthAndLoadUser() {
+    const accessToken = localStorage.getItem('sb-access-token');
+
+    if (!accessToken) {
+        // Not logged in -> Redirect
+        window.location.href = 'login.html';
+        return;
+    }
+
+    if (sbClient) {
+        // 1. Get User Session
+        const { data: { user }, error } = await sbClient.auth.getUser(accessToken);
+
+        if (error || !user) {
+            console.error("Invalid Token:", error);
+            localStorage.removeItem('sb-access-token');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // 2. Update UI with User Email
+        console.log("Logged in as:", user.email);
+        const userNameEl = document.getElementById('userName');
+        if (userNameEl) {
+            // Use email or metadata if available
+            userNameEl.textContent = user.user_metadata?.full_name || user.email.split('@')[0];
+        }
+
+        // 3. (Optional) Create Profile in DB if missing
+        // This usually happens via Postgres Triggers, but for safety:
+        // await createProfileIfNeeded(user);
+    }
+}
+
+// Run Auth Check on Load
+document.addEventListener('DOMContentLoaded', checkAuthAndLoadUser);
 
 // ===================================
 // FEATURE CLICK HANDLER & API LOGIC
 // ===================================
-const modal = document.getElementById("interactionModal");
-const closeModal = document.querySelector(".close-modal");
+// ===================================
+// FEATURE CLICK HANDLER & API LOGIC
+// ===================================
+const heroGenerator = document.getElementById("heroGenerator");
 const generateBtn = document.getElementById("generateBtn");
-const modalTitle = document.getElementById("modalTitle");
+const generatorTitle = document.getElementById("generatorTitle");
 const resultArea = document.getElementById("resultArea");
 const sourceText = document.getElementById("sourceText");
+const fileUpload = document.getElementById("fileUpload");
+const attachBtn = document.getElementById("attachBtn");
+const filePreview = document.getElementById("filePreview");
+const fileNameSpan = document.getElementById("fileName");
+const removeFileBtn = document.getElementById("removeFile");
 
-let currentFeature = "";
-
-// Close Modal
-closeModal.onclick = function () {
-    modal.style.display = "none";
-}
-window.onclick = function (event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-}
+// Default feature
+let currentFeature = "deep-dive";
+let selectedFile = null;
 
 function handleFeatureClick(feature) {
     const featureNames = {
-        'ai-tutor': 'AI Tutor',
-        'flashcards': 'Flashcards',
-        'games': 'Games',
-        'summary': 'Summary',
-        'avatar': 'Avatar'
+        'ai-tutor': 'AI Tutor', 'flashcards': 'Flashcards',
+        'games': 'Games', 'summary': 'Summary', 'avatar': 'Avatar'
     };
-
-    // Map feature to Backend Generation Type
-    // Backend supports: 'flashcards', 'quiz', 'deep-dive'
     const typeMapping = {
-        'flashcards': 'flashcards',
-        'games': 'quiz', // Map games to quiz for now
-        'summary': 'deep-dive', // Map summary to deep-dive
-        'ai-tutor': 'deep-dive'
+        'flashcards': 'flashcards', 'games': 'quiz',
+        'summary': 'deep-dive', 'ai-tutor': 'deep-dive'
     };
 
     if (!typeMapping[feature]) {
@@ -305,61 +339,131 @@ function handleFeatureClick(feature) {
     }
 
     currentFeature = typeMapping[feature];
-    modalTitle.textContent = `Generate ${featureNames[feature] || feature}`;
+    if (generatorTitle) {
+        generatorTitle.textContent = `Generate ${featureNames[feature] || feature}`;
+    }
+
+    // Clear previous results or keep them? 
+    // Usually better to start fresh or keep context. Let's keep context unless specific request.
+    // User request: "Preserve all existing logic". Existing logic reset inputs on open.
+    // So we should probably reset inputs if context switches, to match previous behavior of "opening fresh modal"
+
     resultArea.style.display = 'none';
     resultArea.textContent = '';
-    modal.style.display = "block";
+
+    // Reset inputs to preserve original "new session" feel
+    sourceText.value = '';
+    selectedFile = null;
+    fileUpload.value = '';
+    filePreview.style.display = 'none';
+
+    // Scroll to generator
+    heroGenerator.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Focus text area
+    setTimeout(() => {
+        sourceText.focus();
+    }, 500);
+
+    showNotification(`Selected: ${featureNames[feature] || feature}`);
 }
+
+// File Attachment Logic
+attachBtn.onclick = () => fileUpload.click();
+
+fileUpload.onchange = (e) => {
+    if (e.target.files.length > 0) {
+        selectedFile = e.target.files[0];
+        fileNameSpan.textContent = selectedFile.name;
+        filePreview.style.display = 'block';
+        sourceText.placeholder = "File attached. Add any extra context if needed...";
+    }
+};
+
+removeFileBtn.onclick = () => {
+    selectedFile = null;
+    fileUpload.value = '';
+    filePreview.style.display = 'none';
+    sourceText.placeholder = "Paste text or attach a file...";
+};
 
 generateBtn.onclick = async () => {
     const text = sourceText.value;
-    if (!text) {
-        showNotification("⚠️ Please enter some text first");
+
+    if (!text && !selectedFile) {
+        showNotification("⚠️ Please paste text OR upload a file");
         return;
     }
 
-    generateBtn.textContent = "Generating...";
+    generateBtn.textContent = "Processing...";
     generateBtn.disabled = true;
 
     try {
-        // 1. Ingest Text
-        // NOTE: In production, we should handle Auth headers here. 
-        // For hackathon with Service Role or simplistic setup, we might skip or fail if RLS is on and we don't pass token.
-        // Since user wanted "Implement now", I will assume we might need a test token or public access if RLS blocks.
-        // Ideally: const { data: { session } } = await supabase.auth.getSession()
-        // Headers: { Authorization: `Bearer ${session.access_token}` }
-        // For now, let's try calling it. If it 401s, we'll need to add Auth logic.
+        let documentId = null;
 
-        // Mocking a User ID for ingestion (Backend expects user_id from token usually, but let's see)
-        // Actually, my backend dependencies.py requires `Authorization` header.
-        // We need a way to log in! 
-        // Since we don't have a login UI yet, this will fail 401. 
+        // SCENARIO 1: FILE UPLOAD
+        if (selectedFile) {
+            showNotification("📤 Uploading file...");
 
-        // TEMPORARY FIX: we will assume the User is sending a dummy token or we update backend to allow anon.
-        // OR better: I alert the user they need to log in, but there is no login page.
-        // Let's implement the call and see.
+            // 1. Upload to Supabase Storage
+            const fileExt = selectedFile.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `uploads/${fileName}`; // Assumes 'uploads' bucket exists
 
-        const ingestRes = await fetch(`${API_BASE_URL}/ingest/text`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('sb-access-token') || 'test-token'}`
-            },
-            body: JSON.stringify({ title: "Frontend Upload", content: text })
-        });
+            const { data: uploadData, error: uploadError } = await sbClient.storage
+                .from('documents') // User needs to create this bucket or 'uploads'
+                .upload(filePath, selectedFile);
 
-        if (!ingestRes.ok) throw new Error("Ingestion failed - Check Auth/Backend");
-        const ingestData = await ingestRes.json();
+            if (uploadError) {
+                // If bucket doesn't exist, try 'uploads' or alert user
+                console.error(uploadError);
+                throw new Error(`Upload Failed: ${uploadError.message}. Does 'documents' bucket exist?`);
+            }
 
-        // 2. Generate Content
+            // 2. Ingest Reference
+            const ingestRes = await fetch(`${API_BASE_URL}/ingest/file-reference`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+                },
+                body: JSON.stringify({
+                    title: selectedFile.name,
+                    file_path: filePath,
+                    file_type: fileExt
+                })
+            });
+
+            if (!ingestRes.ok) throw new Error("File Ingestion failed");
+            const ingestData = await ingestRes.json();
+            documentId = ingestData.document_id;
+
+            // SCENARIO 2: RAW TEXT
+        } else {
+            const ingestRes = await fetch(`${API_BASE_URL}/ingest/text`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+                },
+                body: JSON.stringify({ title: "Frontend Text", content: text })
+            });
+
+            if (!ingestRes.ok) throw new Error("Text Ingestion failed");
+            const ingestData = await ingestRes.json();
+            documentId = ingestData.document_id;
+        }
+
+        // 3. Generate Content
+        showNotification("✨ Generating Content...");
         const genRes = await fetch(`${API_BASE_URL}/generate/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('sb-access-token') || 'test-token'}`
+                'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
             },
             body: JSON.stringify({
-                document_id: ingestData.document_id,
+                document_id: documentId,
                 type: currentFeature
             })
         });
@@ -367,15 +471,23 @@ generateBtn.onclick = async () => {
         if (!genRes.ok) throw new Error("Generation failed");
         const genData = await genRes.json();
 
+        // Render Result (JSON formatted)
         resultArea.style.display = 'block';
-        resultArea.textContent = JSON.stringify(genData.content, null, 2);
-        showNotification("✨ Content Generated Successfully!");
+
+        // Simple formatter for visibility
+        let formatted = JSON.stringify(genData.content, null, 2);
+        if (currentFeature === 'deep-dive' && genData.content.markdown) {
+            formatted = genData.content.markdown; // If backend sends MD
+        }
+
+        resultArea.textContent = formatted;
+        showNotification("✅ content Ready!");
 
     } catch (e) {
         console.error(e);
         showNotification(`❌ Error: ${e.message}`);
         resultArea.style.display = 'block';
-        resultArea.textContent = "Error: " + e.message + "\n(Note: You need a valid Supabase Token in localStorage 'sb-access-token' for the backend to accept requests)";
+        resultArea.textContent = "Error: " + e.message;
     } finally {
         generateBtn.textContent = "Generate";
         generateBtn.disabled = false;
