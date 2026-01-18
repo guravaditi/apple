@@ -54,3 +54,20 @@ create policy "Users can view own generations" on public.generated_content for s
 create policy "Users can insert own generations" on public.generated_content for insert with check (auth.uid() = user_id);
 
 create policy "Users can view own quotas" on public.user_quotas for select using (auth.uid() = user_id);
+
+-- STORAGE SETUP
+-- Create the bucket if it doesn't exist (you may need to do this manually in the UI)
+-- insert into storage.buckets (id, name, public) values ('documents', 'documents', false) on conflict (id) do nothing;
+
+-- STORAGE POLICIES
+-- Allow authenticated users to upload to the 'documents' bucket
+create policy "Allow authenticated uploads"
+on storage.objects for insert
+to authenticated
+with check (bucket_id = 'documents');
+
+-- Allow users to see their own files
+create policy "Allow individual read access"
+on storage.objects for select
+to authenticated
+using (bucket_id = 'documents');

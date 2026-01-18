@@ -68,7 +68,7 @@ themeToggle.addEventListener('click', () => {
 const userAvatar = document.getElementById('userAvatar');
 const avatarDropdown = document.getElementById('avatarDropdown');
 
-userAvatar.addEventListener('click', (e) => {
+userAvatar?.addEventListener('click', (e) => {
     e.stopPropagation();
     userAvatar.classList.toggle('active');
 });
@@ -98,7 +98,8 @@ mobileMenuToggle.addEventListener('click', () => {
 // ===================================
 
 // Load user name
-document.getElementById('userName').textContent = userData.name;
+const userNameEl = document.getElementById('userName');
+if (userNameEl) userNameEl.textContent = userData.name;
 
 // Load progress ring
 const progressCircle = document.getElementById('progressCircle');
@@ -137,25 +138,28 @@ setTimeout(() => {
 progressPercentage.textContent = `${userData.progress}%`;
 
 // Load streak
-document.getElementById('streakNumber').textContent = userData.streak;
+const streakNumberEl = document.getElementById('streakNumber');
+if (streakNumberEl) streakNumberEl.textContent = userData.streak;
 
 // Load recent activity
 const activityTimeline = document.getElementById('activityTimeline');
-userData.recentActivity.forEach((activity, index) => {
-    const activityItem = document.createElement('div');
-    activityItem.className = 'activity-item';
-    activityItem.style.animationDelay = `${index * 0.1}s`;
+if (activityTimeline) {
+    userData.recentActivity.forEach((activity, index) => {
+        const activityItem = document.createElement('div');
+        activityItem.className = 'activity-item';
+        activityItem.style.animationDelay = `${index * 0.1}s`;
 
-    activityItem.innerHTML = `
-        <div class="activity-icon">${activity.icon}</div>
-        <div class="activity-content">
-            <div class="activity-title">${activity.title}</div>
-            <div class="activity-time">${activity.time}</div>
-        </div>
-    `;
+        activityItem.innerHTML = `
+            <div class="activity-icon">${activity.icon}</div>
+            <div class="activity-content">
+                <div class="activity-title">${activity.title}</div>
+                <div class="activity-time">${activity.time}</div>
+            </div>
+        `;
 
-    activityTimeline.appendChild(activityItem);
-});
+        activityTimeline.appendChild(activityItem);
+    });
+}
 
 // ===================================
 // FEATURE CARD INTERACTIONS
